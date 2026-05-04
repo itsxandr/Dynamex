@@ -31,19 +31,22 @@ public class InventoryServlet extends HttpServlet {
         if (size > MAX_SIZE) size = MAX_SIZE;
         if (page < 1)       page = 1;
 
-        List<Product> rows = im.page(page - 1, size);
-        int total = im.size();
-        int totalPages = Math.max(1, (int) Math.ceil(total / (double) size));
+        String query = req.getParameter("q");
+
+        InventoryManager.FilteredResult result = im.filteredPage(query, page - 1, size);
 
         StringBuilder sb = new StringBuilder();
         sb.append("{");
         sb.append("\"page\":").append(page).append(",");
         sb.append("\"size\":").append(size).append(",");
-        sb.append("\"total\":").append(total).append(",");
-        sb.append("\"totalPages\":").append(totalPages).append(",");
+        sb.append("\"total\":").append(result.total).append(",");
+        sb.append("\"totalPages\":").append(result.totalPages).append(",");
         sb.append("\"items\":[");
+        List<Product> rows = result.items;
         for (int i = 0; i < rows.size(); i++) {
-            if (i > 0) sb.append(",");
+            if (i > 0) {
+                sb.append(",");
+            }
             sb.append(rows.get(i).toJson());
         }
         sb.append("]");
@@ -53,7 +56,13 @@ public class InventoryServlet extends HttpServlet {
     }
 
     private static int parseInt(String s, int dflt) {
-        if (s == null || s.isEmpty()) return dflt;
-        try { return Integer.parseInt(s); } catch (NumberFormatException e) { return dflt; }
+        if (s == null || s.isEmpty()) {
+            return dflt;
+        }
+        try {
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            return dflt;
+        }
     }
 }
