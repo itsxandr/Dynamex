@@ -33,6 +33,58 @@ public class InventoryManager {
         return new ArrayList<>(products.subList(from, to));
     }
 
+     public FilteredResult filteredPage(String query, int page, int pageSize) {
+        List<Product> filtered;
+
+        if (query == null || query.trim().isEmpty()) {
+            filtered = products;
+        } else {
+            String q = query.trim();
+            filtered = new ArrayList<>();
+
+            boolean isNumeric = q.matches("\\d+");
+            if (isNumeric) {
+                int targetId = Integer.parseInt(q);
+                for (Product p : products) {
+                    if (p.getId() == targetId) {
+                        filtered.add(p);
+                        break;
+                    }
+                }
+            } else {
+                String lower = q.toLowerCase();
+                for (Product p : products) {
+                    if (p.getName().toLowerCase().contains(lower)) {
+                        filtered.add(p);
+                    }
+                }
+            }
+        }
+
+        int total = filtered.size();
+        int totalPages = Math.max(1, (int) Math.ceil(total / (double) pageSize));
+        if (page >= totalPages) page = totalPages - 1;
+        if (page < 0) page = 0;
+
+        int from = page * pageSize;
+        int to   = Math.min(total, from + pageSize);
+        List<Product> rows = (from >= to) ? new ArrayList<>() : new ArrayList<>(filtered.subList(from, to));
+
+        return new FilteredResult(rows, total, totalPages);
+    }
+
+    public static class FilteredResult {
+        public final List<Product> items;
+        public final int total;
+        public final int totalPages;
+
+        FilteredResult(List<Product> items, int total, int totalPages) {
+            this.items = items;
+            this.total = total;
+            this.totalPages = totalPages;
+        }
+    }
+
     public Product binarySearch(int targetID) {
         long start = System.nanoTime();
         int low = 0;
