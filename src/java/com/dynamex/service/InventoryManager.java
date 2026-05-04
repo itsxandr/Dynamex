@@ -63,17 +63,22 @@ public class InventoryManager {
 
         int total = filtered.size();
         int totalPages = Math.max(1, (int) Math.ceil(total / (double) pageSize));
-        if (page >= totalPages) page = totalPages - 1;
-        if (page < 0) page = 0;
+        if (page >= totalPages) {
+            page = totalPages - 1;
+        }
+        if (page < 0) {
+            page = 0;
+        }
 
         int from = page * pageSize;
-        int to   = Math.min(total, from + pageSize);
+        int to = Math.min(total, from + pageSize);
         List<Product> rows = (from >= to) ? new ArrayList<>() : new ArrayList<>(filtered.subList(from, to));
 
         return new FilteredResult(rows, total, totalPages);
     }
 
     public static class FilteredResult {
+
         public final List<Product> items;
         public final int total;
         public final int totalPages;
