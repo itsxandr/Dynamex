@@ -147,9 +147,23 @@
 
             <div class="modal-right">
                 <div class="breakdown-head">
-                    <span class="label-tiny">Optimal Breakdown</span>
-                    <span class="units-saved-pill" id="savedPill">0 UNITS SAVED</span>
+                    <span class="label-tiny">Optimization Comparison</span>
+                    <span class="units-saved-pill" id="savedPill">Optimal Mix</span>
                 </div>
+
+                <div style="display: flex; justify-content: space-between; background: var(--surface-soft); padding: 10px; border-radius: var(--radius-sm); margin-bottom: 12px; border: 1px dashed var(--border);">
+                    <div style="text-align: center; flex: 1;">
+                        <div style="font-size: 9px; color: var(--muted); text-transform: uppercase; font-weight: 700;">Standard Greedy</div>
+                        <div id="modalGreedyUnits" style="font-family: var(--font-mono); font-weight: 700; color: var(--text-soft);">--</div>
+                    </div>
+                    <div style="border-left: 1px solid var(--border); margin: 0 10px;"></div>
+                    <div style="text-align: center; flex: 1;">
+                        <div style="font-size: 9px; color: var(--primary); text-transform: uppercase; font-weight: 700;">Dynamex DP</div>
+                        <div id="modalDpUnits" style="font-family: var(--font-mono); font-weight: 700; color: var(--primary);">--</div>
+                    </div>
+                </div>
+
+                <div class="label-tiny">Optimal Breakdown</div>
                 <div class="breakdown-list" id="breakdownList">
                     <div class="cart-empty" style="padding: 30px 10px;">
                         <div style="font-size:13px;">Enter cash tendered to compute change.</div>
