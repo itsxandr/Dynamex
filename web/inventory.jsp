@@ -46,11 +46,23 @@
             <div class="value" id="mLinearTime">&mdash;</div>
             <div class="delta" id="mSpeedup">&mdash;</div>
         </div>
+        
         <div class="metric-card">
-            <div class="label">Bounded DP — Change</div>
-            <div class="value" id="mDpUnits">&mdash;</div>
-            <div class="delta" id="mGreedyCmp">&mdash;</div>
+            <div class="label">Change Algorithm Comparison</div>
+            <div style="display: flex; align-items: baseline; gap: 12px; margin-top: 5px;">
+                <div class="value" id="mDpUnits" style="color: var(--primary);">--</div>
+                <div style="font-size: 12px; color: var(--muted); font-weight: 600;">DP Units</div>
+            </div>
+            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--surface-soft); display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-family: var(--font-mono); font-size: 11px; color: var(--muted);">
+                    Greedy: <span id="mGreedyUnits" style="font-weight: 600;">--</span>
+                </div>
+                <div id="mEfficiencyGain" style="font-size: 10px; font-weight: 700; color: var(--accent-strong); text-transform: uppercase; letter-spacing: 0.05em;">
+                    --
+                </div>
+            </div>
         </div>
+
         <div class="metric-card">
             <div class="label">Calculation Engine</div>
             <div class="value" style="margin: 10px 0;">
@@ -101,16 +113,11 @@
         <div class="card-header">
             <div>
                 <h2>Cash Register Drawer</h2>
-                <div class="subtitle">
-                    Track and adjust the exact quantity of each bill &amp; coin
-                    in the drawer. The Bounded DP only uses what is physically
-                    here.
-                </div>
+                <div class="subtitle">Track and adjust the exact quantity of each bill &amp; coin in the drawer. The Bounded DP only uses what is physically here.</div>
             </div>
             <span class="units-saved-pill">Bounded Supply</span>
         </div>
         <div class="card-body">
-
             <div class="reg-summary">
                 <div class="stat">
                     <span class="k">Total Cash on Hand</span>
@@ -129,7 +136,6 @@
                     <span class="v" id="regActiveCount">0</span>
                 </div>
             </div>
-
             <div class="register-grid" id="registerList"></div>
         </div>
     </section>
@@ -138,10 +144,7 @@
         <div class="card-header">
             <div>
                 <h2>Denomination Availability</h2>
-                <div class="subtitle">
-                    Toggle bills/coins on or off entirely (e.g. to simulate
-                    out-of-stock scenarios in the algorithm test).
-                </div>
+                <div class="subtitle">Toggle bills/coins on or off entirely (e.g. to simulate out-of-stock scenarios in the algorithm test).</div>
             </div>
             <span class="units-saved-pill">Resource Management</span>
         </div>
