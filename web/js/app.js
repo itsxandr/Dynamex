@@ -2,9 +2,8 @@
     const CTX = window.CTX || "";
     const TAX_RATE = 0.12;
 
-    const cart = new Map(); // id -> { product, qty }
+    const cart = new Map();
 
-    // ----- Clock -----
     function tick() {
         const d = new Date();
         const t = d.toLocaleString("en-PH", { hour12: false });
@@ -13,7 +12,6 @@
     }
     tick(); setInterval(tick, 1000);
 
-    // ----- Money helpers -----
     const peso = c => "₱" + c.toLocaleString("en-PH", {
         minimumFractionDigits: 2, maximumFractionDigits: 2
     });
@@ -88,7 +86,6 @@
         recalc();
     });
 
-    // ----- Search -----
     const input = document.getElementById("searchInput");
     const result = document.getElementById("searchResult");
 
@@ -133,7 +130,6 @@
         toast("Cart cleared");
     });
 
-    // ----- Checkout / Modal -----
     const modal = document.getElementById("paymentModal");
     const cashIn = document.getElementById("cashInput");
     const confirmBtn = document.getElementById("confirmBtn");
@@ -148,10 +144,14 @@
         document.getElementById("modalSub").textContent   = peso(t.sub);
         document.getElementById("modalTax").textContent   = peso(t.tax);
         document.getElementById("changeAmount").textContent = peso(0);
+        document.getElementById("modalGreedyUnits").textContent = "--";
+        document.getElementById("modalDpUnits").textContent = "--";
         document.getElementById("breakdownList").innerHTML =
             '<div class="cart-empty" style="padding:30px 10px;"><div style="font-size:13px;">Enter cash tendered to compute change.</div></div>';
         document.getElementById("totalUnits").textContent = "0 units";
-        document.getElementById("savedPill").textContent = "0 UNITS SAVED";
+        document.getElementById("savedPill").textContent = "OPTIMAL MIX";
+        document.getElementById("savedPill").style.background = "var(--surface-soft)";
+        document.getElementById("savedPill").style.color = "var(--muted)";
         cashIn.value = "";
         confirmBtn.disabled = true;
         modal.classList.add("show");
@@ -174,8 +174,14 @@
         const t = lastTotals;
         if (!t) return;
         const cash = parseFloat(cashIn.value);
+        const greedyDisplay = document.getElementById("modalGreedyUnits");
+        const dpDisplay = document.getElementById("modalDpUnits");
+        const pill = document.getElementById("savedPill");
+
         if (isNaN(cash) || cash <= 0) {
             document.getElementById("changeAmount").textContent = peso(0);
+            greedyDisplay.textContent = "--";
+            dpDisplay.textContent = "--";
             confirmBtn.disabled = true;
             return;
         }
@@ -185,47 +191,67 @@
                 '<div class="cart-empty" style="padding:30px 10px;color:var(--danger);">' +
                 '<div style="font-size:13px;">Cash tendered is less than the total due.</div></div>';
             document.getElementById("totalUnits").textContent = "—";
+            greedyDisplay.textContent = "--";
+            dpDisplay.textContent = "--";
             confirmBtn.disabled = true;
             return;
         }
         const totalCent = Math.round(t.total * 100);
         const cashCent  = Math.round(cash    * 100);
-        const r = await fetch(`${CTX}/api/payment?total=${totalCent}&cash=${cashCent}`);
-        const data = await r.json();
-        lastResult = data;
+        
+        try {
+            const r = await fetch(`${CTX}/api/payment?total=${totalCent}&cash=${cashCent}`);
+            const data = await r.json();
+            lastResult = data;
 
-        if (!data.success) {
-            document.getElementById("breakdownList").innerHTML =
-                `<div class="cart-empty" style="padding:30px 10px;color:var(--danger);">
-                    <div style="font-size:13px;">${escapeHtml(data.message)}</div></div>`;
-            document.getElementById("totalUnits").textContent = "—";
-            confirmBtn.disabled = true;
-            return;
-        }
-        const change = data.changeCentavos / 100;
-        document.getElementById("changeAmount").textContent = peso(change);
+            if (!data.success) {
+                document.getElementById("breakdownList").innerHTML =
+                    `<div class="cart-empty" style="padding:30px 10px;color:var(--danger);">
+                        <div style="font-size:13px;">${escapeHtml(data.message)}</div></div>`;
+                document.getElementById("totalUnits").textContent = "—";
+                greedyDisplay.textContent = "Fail";
+                dpDisplay.textContent = "N/A";
+                confirmBtn.disabled = true;
+                return;
+            }
 
-        // Build breakdown list
-        const list = document.getElementById("breakdownList");
-        if (data.breakdown.length === 0) {
-            list.innerHTML = '<div class="cart-empty" style="padding:30px 10px;"><div style="font-size:13px;">No change required.</div></div>';
-        } else {
-            list.innerHTML = data.breakdown.map(d => {
-                const isBill = d.isBill === true;
-                return `<div class="denom-row">
-                            <div class="denom-icon">${isBill ? billIcon() : coinIcon()}</div>
-                            <div class="denom-info">
-                                <div class="denom-name">${escapeHtml(d.label)}</div>
-                                <div class="denom-type">${isBill ? "Paper Currency" : "Metal Unit"}</div>
-                            </div>
-                            <div class="denom-count">x ${d.count}</div>
-                        </div>`;
-            }).join("");
+            const change = data.changeCentavos / 100;
+            document.getElementById("changeAmount").textContent = peso(change);
+
+            greedyDisplay.textContent = data.greedyUnits >= 0 ? data.greedyUnits + " units" : "Fail";
+            dpDisplay.textContent = data.totalUnits + " units";
+
+            if (data.unitsSaved > 0) {
+                pill.textContent = data.unitsSaved + " UNITS SAVED";
+                pill.style.background = "var(--accent-soft)";
+                pill.style.color = "var(--accent-strong)";
+            } else {
+                pill.textContent = "OPTIMAL MIX";
+                pill.style.background = "var(--surface-soft)";
+                pill.style.color = "var(--muted)";
+            }
+
+            const list = document.getElementById("breakdownList");
+            if (data.breakdown.length === 0) {
+                list.innerHTML = '<div class="cart-empty" style="padding:30px 10px;"><div style="font-size:13px;">No change required.</div></div>';
+            } else {
+                list.innerHTML = data.breakdown.map(d => {
+                    const isBill = d.isBill === true;
+                    return `<div class="denom-row">
+                                <div class="denom-icon">${isBill ? billIcon() : coinIcon()}</div>
+                                <div class="denom-info">
+                                    <div class="denom-name">${escapeHtml(d.label)}</div>
+                                    <div class="denom-type">${isBill ? "Paper Currency" : "Metal Unit"}</div>
+                                </div>
+                                <div class="denom-count">x ${d.count}</div>
+                            </div>`;
+                }).join("");
+            }
+            document.getElementById("totalUnits").textContent = `${data.totalUnits} units`;
+            confirmBtn.disabled = false;
+        } catch (err) {
+            toast("Payment calculation error", "error");
         }
-        document.getElementById("totalUnits").textContent = `${data.totalUnits} units`;
-        const saved = data.unitsSaved > 0 ? `${data.unitsSaved} UNITS SAVED` : "OPTIMAL MIX";
-        document.getElementById("savedPill").textContent = saved;
-        confirmBtn.disabled = false;
     }
 
     function billIcon() {
@@ -235,7 +261,6 @@
         return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="6"/><circle cx="15" cy="15" r="6"/></svg>';
     }
 
-    // ----- Confirm + Receipt -----
     async function finalizeTransaction() {
         if (!lastResult || !lastTotals) return null;
         const totalCent = Math.round(lastTotals.total * 100);
@@ -321,7 +346,6 @@
         };
     }
 
-    // ----- Utility -----
     function escapeHtml(s) {
         return String(s).replace(/[&<>"']/g, c =>
             ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));

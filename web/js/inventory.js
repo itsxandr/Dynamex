@@ -32,19 +32,47 @@
     });
 
     async function loadMetrics() {
-        const r = await fetch(`${CTX}/api/metrics`);
-        const m = await r.json();
-        document.getElementById("mDatasetSize").textContent = m.datasetSize.toLocaleString();
-        document.getElementById("mBinaryTime").textContent = (m.binaryTimeNs / 1000).toFixed(1) + " μs";
-        document.getElementById("mBinaryComp").textContent = `${m.binaryComparisons} steps`;
-        document.getElementById("mLinearTime").textContent = (m.linearTimeNs / 1000).toFixed(1) + " μs";
+        try {
+            const r = await fetch(`${CTX}/api/metrics`);
+            const m = await r.json();
+            
+            document.getElementById("mDatasetSize").textContent = m.datasetSize.toLocaleString();
+            document.getElementById("mBinaryTime").textContent = (m.binaryTimeNs / 1000).toFixed(1) + " μs";
+            document.getElementById("mBinaryComp").textContent = `${m.binaryComparisons} steps`;
+            document.getElementById("mLinearTime").textContent = (m.linearTimeNs / 1000).toFixed(1) + " μs";
 
-        const speedup = m.binaryTimeNs > 0 ? (m.linearTimeNs / m.binaryTimeNs).toFixed(1) + "× faster" : "—";
-        document.getElementById("mSpeedup").textContent = speedup;
+            const speedup = m.binaryTimeNs > 0 ? (m.linearTimeNs / m.binaryTimeNs).toFixed(1) + "× faster" : "—";
+            document.getElementById("mSpeedup").textContent = speedup;
 
-        document.getElementById("mDpUnits").textContent = m.dpUnits >= 0 ? `${m.dpUnits} units` : "infeasible";
-        const greedy = m.greedyUnits;
-        document.getElementById("mGreedyCmp").textContent = greedy >= 0 ? `Greedy: ${greedy} units` : "Greedy: fails";
+            const dpUnits = m.dpUnits;
+            const greedyUnits = m.greedyUnits;
+            const dpEl = document.getElementById("mDpUnits");
+            const greedyEl = document.getElementById("mGreedyUnits");
+            const gainEl = document.getElementById("mEfficiencyGain");
+
+            dpEl.textContent = dpUnits >= 0 ? dpUnits : "N/A";
+            
+            greedyEl.textContent = greedyUnits >= 0 ? `${greedyUnits} units` : "Fails";
+
+            if (dpUnits >= 0 && greedyUnits >= 0) {
+                if (greedyUnits > dpUnits) {
+                    const saved = greedyUnits - dpUnits;
+                    gainEl.textContent = `+${saved} Units Saved`;
+                    gainEl.style.color = "var(--accent-strong)";
+                } else {
+                    gainEl.textContent = "Optimal";
+                    gainEl.style.color = "var(--muted-2)";
+                }
+            } else if (dpUnits >= 0 && greedyUnits < 0) {
+                gainEl.textContent = "Greedy Failed";
+                gainEl.style.color = "var(--danger)";
+            } else {
+                gainEl.textContent = "Infeasible";
+                gainEl.style.color = "var(--danger)";
+            }
+        } catch (err) {
+            console.error("Failed to load metrics", err);
+        }
     }
 
     document.getElementById("refreshMetricsBtn").addEventListener("click", () => {
@@ -94,8 +122,6 @@
             }, 200);
         });
     }
-
-    // ---------- Denomination + Register state ----------
 
     let denomCache = [];
 
