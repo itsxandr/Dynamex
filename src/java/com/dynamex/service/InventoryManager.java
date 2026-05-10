@@ -8,11 +8,11 @@ import java.util.List;
 
 public class InventoryManager {
 
-    private final List<Product> products;          
+    private final List<Product> products;
     private volatile long lastSearchNanos = 0L;
-    private volatile int  lastSearchSteps = 0;
+    private volatile int lastSearchSteps = 0;
     private volatile long lastLinearNanos = 0L;
-    private volatile int  lastLinearSteps = 0;
+    private volatile int lastLinearSteps = 0;
 
     public InventoryManager(List<Product> sortedProducts) {
         this.products = sortedProducts;
@@ -28,12 +28,20 @@ public class InventoryManager {
 
     public List<Product> page(int page, int pageSize) {
         int from = Math.max(0, page * pageSize);
-        int to   = Math.min(products.size(), from + pageSize);
-        if (from >= to) return new ArrayList<>();
+        int to = Math.min(products.size(), from + pageSize);
+        if (from >= to) {
+            return new ArrayList<>();
+        }
         return new ArrayList<>(products.subList(from, to));
     }
 
-     public FilteredResult filteredPage(String query, int page, int pageSize) {
+    /**
+     * Returns a filtered + paginated view of products. If query is null or
+     * blank, behaves identically to page(). Filters by numeric ID (exact match)
+     * if the query is a pure number, otherwise filters by case-insensitive
+     * substring match on the product name.
+     */
+    public FilteredResult filteredPage(String query, int page, int pageSize) {
         List<Product> filtered;
 
         if (query == null || query.trim().isEmpty()) {
@@ -124,7 +132,7 @@ public class InventoryManager {
     public int getLastSearchSteps() {
         return lastSearchSteps;
     }
-    
+
     public Product linearSearch(int targetID) {
         long start = System.nanoTime();
         int steps = 0;
@@ -140,9 +148,11 @@ public class InventoryManager {
         lastLinearSteps = steps;
         return hit;
     }
+
     public long getLastLinearNanos() {
         return lastLinearNanos;
     }
+
     public int getLastLinearSteps() {
         return lastLinearSteps;
     }
