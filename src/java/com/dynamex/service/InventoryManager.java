@@ -35,12 +35,6 @@ public class InventoryManager {
         return new ArrayList<>(products.subList(from, to));
     }
 
-    /**
-     * Returns a filtered + paginated view of products. If query is null or
-     * blank, behaves identically to page(). Filters by numeric ID (exact match)
-     * if the query is a pure number, otherwise filters by case-insensitive
-     * substring match on the product name.
-     */
     public FilteredResult filteredPage(String query, int page, int pageSize) {
         List<Product> filtered;
 
