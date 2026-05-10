@@ -15,7 +15,7 @@ import java.util.List;
 public class InventoryServlet extends HttpServlet {
 
     private static final int DEFAULT_SIZE = 50;
-    private static final int MAX_SIZE     = 200;
+    private static final int MAX_SIZE = 200;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -27,9 +27,15 @@ public class InventoryServlet extends HttpServlet {
 
         int page = parseInt(req.getParameter("page"), 1);
         int size = parseInt(req.getParameter("size"), DEFAULT_SIZE);
-        if (size <= 0)      size = DEFAULT_SIZE;
-        if (size > MAX_SIZE) size = MAX_SIZE;
-        if (page < 1)       page = 1;
+        if (size <= 0) {
+            size = DEFAULT_SIZE;
+        }
+        if (size > MAX_SIZE) {
+            size = MAX_SIZE;
+        }
+        if (page < 1) {
+            page = 1;
+        }
 
         String query = req.getParameter("q");
 
