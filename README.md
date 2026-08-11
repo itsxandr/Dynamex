@@ -13,7 +13,7 @@ Built with **Java 8 + Java EE 8 (`javax.servlet`) + JSP** as a Maven project so 
 
 ```text
 Dynamex/
-├── pom.xml                            <- Maven build (open this in NetBeans)
+├── pom.xml                            
 └── src/main/
     ├── java/com/dynamex/
     │   ├── model/
